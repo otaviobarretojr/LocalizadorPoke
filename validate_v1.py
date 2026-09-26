@@ -42,3 +42,26 @@ for typ,(ingredient,shop) in encounter_expected.items():
 assert "Ele sozinho não garante Encounter Power" in html
 assert "Preço-base:" in html
 print("Encounter audit OK: 18/18 type ingredients, shops, prices UI and mechanics disclaimer present.")
+
+
+# Final UI/workflow integrity audit
+ui_required=[
+    "<title>Pokémon Scarlet & Violet Locator</title>",
+    "PALDEA • SCARLET & VIOLET • V1",
+    'option value="scarlet"',
+    'option value="violet"',
+    'option value="recommended"',
+    'option value="route"',
+    'if(f==="scarlet")',
+    'if(f==="violet")',
+    'if(f==="recommended")',
+    'if(f==="route")',
+    "function nextInRegion(n)",
+    "function routeView(a)",
+    "localStorage",
+]
+for token in ui_required:
+    assert token in html, f"Missing final UI/workflow feature: {token}"
+assert html.count("<script>")==1 and html.count("</script>")==1, "Unexpected script block structure"
+assert html.count("<html")==1 and html.count("</html>")==1, "Unexpected HTML document structure"
+print("Final UI audit OK: branding, filters, route workflow, persistence and document structure present.")
