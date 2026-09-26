@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#090b10"><title>Pokémon Scarlet Locator</title>
+<meta name="theme-color" content="#090b10"><title>Pokémon Scarlet & Violet Locator</title>
 <style>
 :root{color-scheme:dark;--red:#ef4444;--bg:#090b10;--card:#141821;--muted:#9ca3af;--line:#282f3b;--green:#22c55e}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(circle at top,#241014 0,#090b10 38%);color:#fff}
@@ -29,7 +29,7 @@ details{border-top:1px solid #242a34;padding:11px 0}summary{cursor:pointer;font-
 .guidefold{margin:10px 0;border:1px solid #334155;border-radius:14px;overflow:hidden;background:#0b1220}.guidefold>summary{padding:12px 13px;list-style:none;display:flex;align-items:center;justify-content:space-between;font-weight:800;cursor:pointer}.guidefold>summary::-webkit-details-marker{display:none}.guidefold>summary:after{content:"＋";font-size:18px;color:#94a3b8}.guidefold[open]>summary:after{content:"−"}.guidecontent{padding:0 12px 12px}.guidecontent>.row:first-child{border-top:0}.navbox{margin:0 0 10px;padding:12px;border-radius:14px;background:#0a1018;border:1px solid #263244}.navtitle{font-weight:800;margin-bottom:8px}.navstep{display:grid;grid-template-columns:24px 1fr;gap:7px;padding:5px 0;line-height:1.4}.navstep span:first-child{text-align:center}.navmeta{margin-top:7px;font-size:12px;color:#94a3b8}.landmark{margin-top:9px;padding:10px;border-radius:11px;background:#111827;border-left:3px solid #60a5fa;line-height:1.4}.landmark b{display:block;font-size:11px;text-transform:uppercase;color:#93c5fd;margin-bottom:3px}.reqmap{margin-top:9px;padding:10px;border-radius:11px;background:#111827;border-left:3px solid #a78bfa;line-height:1.4}.reqmap b{display:block;font-size:11px;text-transform:uppercase;color:#c4b5fd;margin-bottom:3px}
 </style></head>
 <body><main class="wrap">
-<section class="hero"><span class="eyebrow">🔴 PALDEA • SCARLET • V1</span><h1>Pokémon Locator</h1><p>Encontre, capture e complete sua Pokédex sem ficar rodando Paldea à toa.</p>
+<section class="hero"><span class="eyebrow">🔴🟣 PALDEA • SCARLET & VIOLET • V1</span><h1>Pokémon Locator</h1><p>Encontre, capture e complete sua Pokédex sem ficar rodando Paldea à toa.</p>
 <div class="stats"><div class="stat"><b id="total">0</b><span>NO GUIA</span></div><div class="stat"><b id="caughtN">0</b><span>CAPTURADOS</span></div><div class="stat"><b id="missingN">0</b><span>FALTAM</span></div></div></section><button id="undoBtn" class="undo" onclick="undoLast()">↩ Desfazer última captura</button>
 <div class="toolbar"><input id="q" autocomplete="off" placeholder="🔎 Procurar Pokémon..."><select id="filter"><option value="missing">Só faltam</option><option value="all">Todos</option><option value="recommended">⭐ Próximo recomendado</option><option value="route">🗺️ Rota por região</option><option value="scarlet">Scarlet exclusivos</option><option value="violet">Violet exclusivos</option></select></div>
 <section id="grid" class="grid"></section><p class="note">O guia prioriza o caminho mais prático. Encounter Power é uma ajuda opcional e dura 30 minutos.</p>
