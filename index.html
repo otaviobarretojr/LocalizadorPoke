@@ -19,7 +19,8 @@ input,select,button{border:1px solid var(--line);border-radius:13px;background:#
 details{border-top:1px solid #242a34;padding:11px 0}summary{cursor:pointer;font-weight:700}.recipe{margin-top:10px;padding:12px;background:#0d1118;border-radius:12px;line-height:1.5}
 .actions{display:flex;gap:8px}.caught{flex:1;cursor:pointer}.caught.on{background:#12321c;border-color:#246c38;color:#8cf0aa}.empty{text-align:center;color:#9ca3af;padding:60px 10px}
 .note{font-size:12px;color:#7f8795;margin:16px 2px 40px}@media(max-width:480px){.wrap{padding:13px}.grid{grid-template-columns:1fr}.visual{height:170px}.visual img{height:155px}}
-</style></head>
+
+.needbox{margin:12px 0;padding:12px;border:1px solid #334155;border-radius:14px;background:#0b1220}.needtitle{font-weight:800;margin-bottom:8px}.needgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.needcell{padding:9px;border-radius:10px;background:#111827}.needcell b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#94a3b8;margin-bottom:3px}.warn{grid-column:1/-1;border-left:3px solid #f59e0b}@media(max-width:560px){.needgrid{grid-template-columns:1fr}.warn{grid-column:auto}}</style></head>
 <body><main class="wrap">
 <section class="hero"><span class="eyebrow">🔴 PALDEA • SCARLET</span><h1>Pokémon Locator</h1><p>Encontre, capture e complete sua Pokédex sem ficar rodando Paldea à toa.</p>
 <div class="stats"><div class="stat"><b id="total">0</b><span>NO GUIA</span></div><div class="stat"><b id="caughtN">0</b><span>CAPTURADOS</span></div><div class="stat"><b id="missingN">0</b><span>FALTAM</span></div></div></section>
@@ -38,11 +39,32 @@ const pokemon=[
 ]
 const saved=new Set(JSON.parse(localStorage.getItem("caught")||"[]"));
 const $=s=>document.querySelector(s);
+
+function evoInfo(p){
+ const m=p.method||""; let item="—",where="—",condition=m;
+ const items=["Thunder Stone","Fire Stone","Ice Stone","Dusk Stone","Dawn Stone","Sun Stone","Leaf Stone","Auspicious Armor","Malicious Armor","King's Rock","Metal Coat"];
+ item=items.find(x=>m.includes(x))||"—";
+ if(item==="Thunder Stone"||item==="Fire Stone"||item==="Leaf Stone") where="Delibird Presents / exploração";
+ else if(item==="Ice Stone") where="Dalizapa Passage / Glaseado Mountain";
+ else if(item==="Dusk Stone") where="Montenevera / Area Zero / Porto Marinada";
+ else if(item==="Dawn Stone") where="Area Zero / East Province A3 / West Province A3";
+ else if(item==="Sun Stone") where="Artazon / Asado Desert / exploração";
+ else if(item==="Auspicious Armor") where="Zapapico • 10 Bronzor Fragments";
+ else if(item==="Malicious Armor") where="Zapapico (Violet) • 10 Sinistea Chips";
+ else if(item==="King's Rock"||item==="Metal Coat") where="Delibird Presents";
+ let warning="";
+ if(/♀|fêmea/i.test(m+p.route)) warning="Confira o gênero: esta evolução exige fêmea.";
+ else if(/♂|macho/i.test(m+p.route)) warning="Confira o gênero: esta evolução exige macho.";
+ else if(/troca/i.test(m+p.route)) warning="Esta evolução pode exigir troca com outro jogador.";
+ else if(/1\.000|1000|Let's Go/i.test(m+p.route)) warning="Mantenha o Pokémon fora da Poké Ball durante a caminhada e depois suba um nível.";
+ else if(/amizade/i.test(m+p.route)) warning="A amizade precisa estar alta antes do nível que aciona a evolução.";
+ return {item,where,condition,warning};
+}
 function artwork(id){return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/"+id+".png"}
 function stats(){total.textContent=pokemon.length;caughtN.textContent=pokemon.filter(p=>saved.has(p.n)).length;missingN.textContent=pokemon.filter(p=>!saved.has(p.n)).length}
 function draw(){const term=q.value.trim().toLowerCase(),f=filter.value;let a=pokemon.filter(p=>p.name.toLowerCase().includes(term)||String(p.n).includes(term));if(f==="missing")a=a.filter(p=>!saved.has(p.n));if(f==="scarlet")a=a.filter(p=>p.version==="scarlet");if(f==="violet")a=a.filter(p=>p.version==="violet");
 grid.innerHTML=a.map(p=>`<article class="card"><div class="visual"><img loading="lazy" src="${artwork(p.dex)}" alt="${p.name}"></div><div class="body"><div class="top"><div><div class="num">Paldea #${p.n}</div><h2>${p.name}</h2></div><span class="tag">${p.version==="violet"?"🟣 Violet":p.version==="both"?"🔵 Ambas":"🔴 Scarlet"}</span></div><div class="types">${p.types.map(t=>`<span class="type">${t}</span>`).join("")}</div>
-<div class="row"><div class="label">📍 Melhor local</div><div class="value">${p.place}</div></div><div class="row"><div class="label">🧭 Partida</div><div class="value">${p.fast}</div></div><div class="row"><div class="label">➡️ Caminho</div><div class="value">${p.route}</div></div>
+<div class="row"><div class="label">📍 Melhor local</div><div class="value">${p.place}</div></div><div class="row"><div class="label">🧭 Partida</div><div class="value">${p.fast}</div></div><div class="row"><div class="label">➡️ Caminho</div><div class="value">${(()=>{const e=evoInfo(p);return `<div class="needbox"><div class="needtitle">🧭 Guia rápido</div><div class="needgrid"><div class="needcell"><b>📦 Item necessário</b>${e.item}</div><div class="needcell"><b>📍 Onde conseguir</b>${e.where}</div><div class="needcell"><b>⚙️ Como evoluir</b>${e.condition}</div>${e.warning?`<div class="needcell warn"><b>⚠️ Condição especial</b>${e.warning}</div>`:""}</div></div>`})()}${p.route}</div></div>
 <div class="row"><div class="label">🎯 Método</div><div class="value">${p.method}</div></div><div class="row"><div class="label">🕐 Horário</div><div class="value">${p.time}</div></div>
 <details><summary>🥪 Sanduíche / Encounter Power</summary><div class="recipe"><b>Tipo recomendado:</b> ${p.encounter}<br>${p.recipe}<br><span class="muted">Meal Powers permanecem ativos por 30 min.</span></div></details>
 <details><summary>💡 Dica de captura</summary><div class="recipe">${p.tip}</div></details>
