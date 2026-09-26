@@ -9,7 +9,7 @@
 .wrap{max-width:980px;margin:auto;padding:18px}.hero{padding:28px 0 14px}.eyebrow,.tag{display:inline-flex;align-items:center;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;background:#35191b;color:#ff9292}
 h1{margin:10px 0 5px;font-size:clamp(30px,8vw,52px);letter-spacing:-.04em}.hero p,.muted{color:var(--muted)}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:15px 0}.stat{background:#121720;border:1px solid var(--line);border-radius:15px;padding:12px}.stat b{display:block;font-size:20px}.stat span{font-size:11px;color:var(--muted)}
-.toolbar{display:flex;gap:9px;flex-wrap:wrap;position:sticky;top:0;z-index:10;background:#090b10e8;backdrop-filter:blur(14px);padding:12px 0}
+.undo{display:none;width:100%;margin:0 0 12px;padding:10px 12px;border-radius:11px;border:1px solid #475569;background:#111827;color:inherit;font-weight:800;cursor:pointer}.undo.show{display:block}.toolbar{display:flex;gap:9px;flex-wrap:wrap;position:sticky;top:0;z-index:10;background:#090b10e8;backdrop-filter:blur(14px);padding:12px 0}
 input,select,button{border:1px solid var(--line);border-radius:13px;background:#11151d;color:#fff;padding:13px;font-size:15px}input{flex:1;min-width:210px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.card{overflow:hidden;background:linear-gradient(180deg,#171c25,#11151c);border:1px solid var(--line);border-radius:22px}
 .visual{height:190px;display:grid;place-items:center;background:radial-gradient(circle,#3b1b20 0,#171b23 60%)}.visual img{height:170px;width:170px;object-fit:contain;filter:drop-shadow(0 12px 18px #0008)}
@@ -30,7 +30,7 @@ details{border-top:1px solid #242a34;padding:11px 0}summary{cursor:pointer;font-
 </style></head>
 <body><main class="wrap">
 <section class="hero"><span class="eyebrow">🔴 PALDEA • SCARLET</span><h1>Pokémon Locator</h1><p>Encontre, capture e complete sua Pokédex sem ficar rodando Paldea à toa.</p>
-<div class="stats"><div class="stat"><b id="total">0</b><span>NO GUIA</span></div><div class="stat"><b id="caughtN">0</b><span>CAPTURADOS</span></div><div class="stat"><b id="missingN">0</b><span>FALTAM</span></div></div></section>
+<div class="stats"><div class="stat"><b id="total">0</b><span>NO GUIA</span></div><div class="stat"><b id="caughtN">0</b><span>CAPTURADOS</span></div><div class="stat"><b id="missingN">0</b><span>FALTAM</span></div></div></section><button id="undoBtn" class="undo" onclick="undoLast()">↩ Desfazer última captura</button>
 <div class="toolbar"><input id="q" autocomplete="off" placeholder="🔎 Procurar Pokémon..."><select id="filter"><option value="missing">Só faltam</option><option value="all">Todos</option><option value="recommended">⭐ Próximo recomendado</option><option value="route">🗺️ Rota por região</option><option value="scarlet">Scarlet exclusivos</option><option value="violet">Violet exclusivos</option></select></div>
 <section id="grid" class="grid"></section><p class="note">O guia prioriza o caminho mais prático. Encounter Power é uma ajuda opcional e dura 30 minutos.</p>
 </main>
@@ -44,7 +44,7 @@ const pokemon=[
 {n:381,dex:989,name:"Sandy Shocks",types:["Electric","Ground"],version:"scarlet",place:"Área Zero • área rochosa",fast:"Research Station 2",route:"Saia da Research Station 2 e procure especificamente na área rochosa à esquerda da estação.",time:"Qualquer período",method:"Selvagem • Paradox • pós-jogo",encounter:"Electric ou Ground",recipe:"Encounter Power de Electric/Ground pode ajudar.",tip:"Este tem um ponto bem específico: área rochosa à esquerda da Research Station 2."},
 {n:397,dex:1005,name:"Roaring Moon",types:["Dragon","Dark"],version:"scarlet",place:"Área Zero • caverna escondida",fast:"Research Station 3",route:"Teleporte para a Research Station 3 e procure a passagem estreita entre as rochas que leva à grande caverna escondida; faça ciclos dentro dela.",time:"Qualquer período",method:"Selvagem • Paradox • pós-jogo",encounter:"Dragon",recipe:"Encounter Power de Dragon é útil para aumentar os encontros; não é obrigatório.",tip:"É mais raro. O ponto decisivo é entrar na caverna escondida correta."}
 ]
-const saved=new Set(JSON.parse(localStorage.getItem("caught")||"[]"));
+const saved=new Set(JSON.parse(localStorage.getItem("caught")||"[]"));let lastChange=null;
 const $=s=>document.querySelector(s);
 
 
@@ -140,7 +140,7 @@ function navInfo(p){
  return {destination:p.place,start:p.fast,action:p.route,condition:(p.time&&p.time!=="Qualquer período"?p.time+" • ":"")+p.method,version:special,evo};
 }
 function artwork(id){return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/"+id+".png"}
-function stats(){total.textContent=pokemon.length;caughtN.textContent=pokemon.filter(p=>saved.has(p.n)).length;missingN.textContent=pokemon.filter(p=>!saved.has(p.n)).length}
+function stats(){total.textContent=pokemon.length;caughtN.textContent=pokemon.filter(p=>saved.has(p.n)).length;missingN.textContent=pokemon.filter(p=>!saved.has(p.n)).length;undoBtn.classList.toggle("show",!!lastChange);if(lastChange){const p=pokemon.find(x=>x.n===lastChange.n);undoBtn.textContent="↩ Desfazer: "+(p?p.name:"última alteração")}}
 function routeKey(p){let s=p.place;if(/Área Zero/i.test(s))return "Área Zero";if(/Glaseado/i.test(s))return "Glaseado Mountain";if(/Asado/i.test(s))return "Asado Desert";if(/Tagtree/i.test(s))return "Tagtree Thicket";if(/Casseroya/i.test(s))return "Casseroya Lake";if(/North Province/i.test(s))return "North Province";if(/West Province/i.test(s))return "West Province";if(/East Province/i.test(s))return "East Province";if(/South Province/i.test(s))return "South Province";if(/Zapapico/i.test(s))return "Zapapico";if(/Levincia/i.test(s))return "Levincia";if(/Medali/i.test(s))return "Medali";if(/Evolução|Troca|Union Circle/i.test(s))return "Evoluções / trocas";if(/Santuário|Shrine/i.test(s))return "Santuários";return s.split(" / ")[0].split(" • ")[0]}
 function openPokemon(name){q.value=name;filter.value="all";draw();requestAnimationFrame(()=>{const d=document.querySelector(".guidefold");if(d)d.open=true;window.scrollTo({top:0,behavior:"smooth"})})}
 function huntScore(p){let s=0;if(p.version==="violet")s+=100;if(/Troca|Multiplayer|Union Circle/i.test((p.method||"")+" "+(p.place||"")))s+=60;if(/999|Santuário|Shrine|Crest|Armor|Stone|amizade|Rage Fist|Hyper Drill|Twin Beam/i.test((p.method||"")+" "+(p.route||"")))s+=25;if(/Selvagem/i.test(p.method||""))s-=30;if(p.version==="scarlet")s-=10;return s}
@@ -157,7 +157,8 @@ grid.innerHTML=a.map(p=>`<article class="card"><div class="visual"><img loading=
 <details><summary>🥪 Sanduíche / Encounter Power</summary><div class="recipe"><b>Tipo recomendado:</b> ${p.encounter}<br>${p.recipe}<br><span class="muted">Meal Powers permanecem ativos por 30 min.</span></div></details>
 <details><summary>💡 Dica de captura</summary><div class="recipe">${p.tip}</div></details></div></details>
 ${huntStatus(p.n)}<div class="actions"><button class="caught ${saved.has(p.n)?"on":""}" onclick="toggleCaught(${p.n},true)">${saved.has(p.n)?"✓ Capturado":"✓ Capturei • próximo"}</button></div><button class="nextbtn" onclick="nextInRegion(${p.n})">➡️ ${nextLabel(p.n)}</button><div class="huntnote">Ao marcar uma captura, a sessão avança automaticamente dentro desta região.</div></div></article>`).join("")||'<div class="empty">Nenhum Pokémon encontrado nesse filtro.</div>';stats()}
-function toggleCaught(n,advance=false){const was=saved.has(n);if(was)saved.delete(n);else saved.add(n);localStorage.setItem("caught",JSON.stringify([...saved]));if(advance&&!was){const cur=pokemon.find(p=>p.n===n),k=cur&&routeKey(cur),left=pokemon.filter(p=>k&&routeKey(p)===k&&!saved.has(p.n)&&p.n!==n).sort(huntSort);if(left.length){openPokemon(left[0].name);return}q.value="";filter.value="route";draw();return}draw()}
+function undoLast(){if(!lastChange)return;lastChange.was?saved.add(lastChange.n):saved.delete(lastChange.n);localStorage.setItem("caught",JSON.stringify([...saved]));const n=lastChange.n;lastChange=null;const p=pokemon.find(x=>x.n===n);if(p)openPokemon(p.name);else draw()}
+function toggleCaught(n,advance=false){const was=saved.has(n);lastChange={n,was};if(was)saved.delete(n);else saved.add(n);localStorage.setItem("caught",JSON.stringify([...saved]));if(advance&&!was){const cur=pokemon.find(p=>p.n===n),k=cur&&routeKey(cur),left=pokemon.filter(p=>k&&routeKey(p)===k&&!saved.has(p.n)&&p.n!==n).sort(huntSort);if(left.length){openPokemon(left[0].name);return}q.value="";filter.value="route";draw();return}draw()}
 q.addEventListener("input",draw);filter.addEventListener("change",draw);draw();
 </script></body></html,
 {n:326,dex:199,name:"Slowking",types:["Water","Psychic"],version:"both",place:"Evolução por troca",fast:"Levincia / Delibird Presents",route:"Consiga um Slowpoke, faça-o segurar King's Rock e troque com outro jogador. Quem evolui é Slowpoke, não Slowbro.",time:"Qualquer período",method:"Troca • Slowpoke + King's Rock",encounter:"Não se aplica",recipe:"Sanduíche não é necessário.",tip:"Se quiser manter o mesmo Pokémon, combine uma troca de ida e volta."},
