@@ -21,3 +21,24 @@ required=["function toggleCaught(n,advance=false)","function undoLast()","functi
 for token in required:
     assert token in s, f"Missing V1 feature: {token}"
 print("V1 validation OK: 400/400, unique IDs/names, required fields and hunt workflow present.")
+
+
+# Encounter Power ingredient/shop audit
+html=pathlib.Path("index.html").read_text(encoding="utf-8")
+encounter_expected={
+"Normal":("Tofu","Aquiesta Supermarket"),"Fire":("Red Bell Pepper","Deli Cioso / Aquiesta Supermarket"),
+"Water":("Cucumber","Deli Cioso / Aquiesta Supermarket"),"Electric":("Yellow Bell Pepper","Deli Cioso / Aquiesta Supermarket"),
+"Grass":("Lettuce","Artisan Bakery / Aquiesta Supermarket"),"Ice":("Klawf Stick","Aquiesta Supermarket"),
+"Fighting":("Pickle","Sure Cans / Aquiesta Supermarket"),"Poison":("Green Bell Pepper","Deli Cioso / Aquiesta Supermarket"),
+"Ground":("Ham","Artisan Bakery / Aquiesta Supermarket"),"Flying":("Prosciutto","Deli Cioso"),
+"Psychic":("Onion","Artisan Bakery / Aquiesta Supermarket"),"Bug":("Cherry Tomatoes","Sure Cans / Aquiesta Supermarket"),
+"Rock":("Bacon","Deli Cioso"),"Ghost":("Red Onion","Deli Cioso / Aquiesta Supermarket"),
+"Dragon":("Avocado","Deli Cioso / Aquiesta Supermarket"),"Dark":("Smoked Fillet","Deli Cioso"),
+"Steel":("Hamburger","Deli Cioso"),"Fairy":("Tomato","Sure Cans / Aquiesta Supermarket")}
+assert len(encounter_expected)==18
+for typ,(ingredient,shop) in encounter_expected.items():
+    token=f'{typ}:[\"{ingredient}\",\"{shop}\"'
+    assert token in html, f"Encounter mapping missing/incorrect: {typ}"
+assert "Ele sozinho não garante Encounter Power" in html
+assert "Preço-base:" in html
+print("Encounter audit OK: 18/18 type ingredients, shops, prices UI and mechanics disclaimer present.")
