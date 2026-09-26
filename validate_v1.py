@@ -79,3 +79,19 @@ for name in violet_exclusive:
 assert sum(v=="scarlet" for v in versions.values())==23
 assert sum(v=="violet" for v in versions.values())==23
 print("Version-exclusive audit OK: 23 Scarlet + 23 Violet base-Paldea entries.")
+
+
+# Release V1.1 critical-method and audited-price regression checks
+critical_text={
+"Pawmot":"1.000 passos","Brambleghast":"1.000 passos","Rabsca":"1.000 passos",
+"Annihilape":"Rage Fist 20","Kingambit":"3 Bisharp líderes","Gholdengo":"999 Gimmighoul Coins",
+"Palafin":"Union Circle","Scizor":"Metal Coat","Slowking":"King's Rock","Gengar":"Pincurchin por Haunter"}
+for name,token in critical_text.items():
+    assert f'name:"{name}"' in html and token in html, f"Critical method missing: {name} / {token}"
+encounter_prices={"Normal":"$260","Fire":"$240","Water":"$130","Electric":"$240","Grass":"$90","Ice":"$500","Fighting":"$90","Poison":"$230","Ground":"$170","Flying":"$200","Psychic":"$130","Bug":"$120","Rock":"$150","Ghost":"$230","Dragon":"$180","Dark":"$330","Steel":"$380","Fairy":"$100"}
+for typ,price in encounter_prices.items():
+    assert f'{typ}:[' in html and price in html, f"Encounter price missing: {typ} / {price}"
+assert "PALDEA • SCARLET & VIOLET • V1.1" in html
+for name in ["Oinkologne","Spidops","Lokix","Skiploom","Spewpa"]:
+    assert f'name:"{name}"' in html
+print("Release V1.1 audit OK: critical evolutions/trades, 18 prices, branding and refined early routes present.")
