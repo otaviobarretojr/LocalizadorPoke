@@ -65,3 +65,17 @@ for token in ui_required:
 assert html.count("<script>")==1 and html.count("</script>")==1, "Unexpected script block structure"
 assert html.count("<html")==1 and html.count("</html>")==1, "Unexpected HTML document structure"
 print("Final UI audit OK: branding, filters, route workflow, persistence and document structure present.")
+
+
+# Base Paldea version-exclusive audit (families + Paradox + box legends)
+scarlet_exclusive={"Drifloon","Drifblim","Armarouge","Stunky","Skuntank","Oranguru","Larvitar","Pupitar","Tyranitar","Stonjourner","Skrelp","Dragalge","Deino","Zweilous","Hydreigon","Great Tusk","Scream Tail","Brute Bonnet","Flutter Mane","Slither Wing","Sandy Shocks","Roaring Moon","Koraidon"}
+violet_exclusive={"Misdreavus","Mismagius","Gulpin","Swalot","Ceruledge","Bagon","Shelgon","Salamence","Dreepy","Drakloak","Dragapult","Passimian","Eiscue","Clauncher","Clawitzer","Iron Treads","Iron Bundle","Iron Hands","Iron Jugulis","Iron Moth","Iron Thorns","Iron Valiant","Miraidon"}
+versions={r[2]:r[4] for r in rows}
+assert len(scarlet_exclusive)==23 and len(violet_exclusive)==23
+for name in scarlet_exclusive:
+    assert versions.get(name)=="scarlet", f"{name}: expected Scarlet exclusive, got {versions.get(name)}"
+for name in violet_exclusive:
+    assert versions.get(name)=="violet", f"{name}: expected Violet exclusive, got {versions.get(name)}"
+assert sum(v=="scarlet" for v in versions.values())==23
+assert sum(v=="violet" for v in versions.values())==23
+print("Version-exclusive audit OK: 23 Scarlet + 23 Violet base-Paldea entries.")
