@@ -544,3 +544,4 @@ function undoLast(){if(!lastChange)return;lastChange.was?saved.add(lastChange.n)
 function toggleCaught(n,advance=false){const was=saved.has(n);lastChange={n,was};localStorage.setItem("lastCaughtChange",JSON.stringify(lastChange));if(was)saved.delete(n);else saved.add(n);localStorage.setItem("caught",JSON.stringify([...saved]));if(advance&&!was){const cur=pokemon.find(p=>p.n===n),k=cur&&routeKey(cur),left=pokemon.filter(p=>k&&routeKey(p)===k&&!saved.has(p.n)&&p.n!==n).sort(huntSort);if(left.length){openPokemon(left[0].name);return}q.value="";filter.value="route";draw();return}draw()}
 q.addEventListener("input",draw);filter.addEventListener("change",draw);draw();
 </script>
+</body></html>
