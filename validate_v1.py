@@ -1,8 +1,11 @@
 import re, pathlib, sys
 s=pathlib.Path("index.html").read_text(encoding="utf-8")
 pat=re.compile(r'\{n:(\d+),dex:(\d+),name:"([^"]+)",types:\[([^\]]*)\],version:"([^"]+)",place:"([^"]*)",fast:"([^"]*)",route:"([^"]*)",time:"([^"]*)",method:"([^"]*)",encounter:"([^"]*)",recipe:"([^"]*)",tip:"([^"]*)"\}')
-rows=pat.findall(s)
-assert len(rows)==400, f"Expected 400 Pokemon, got {len(rows)}"
+script=s[s.index("<script>"):s.index("</script>")]
+array=script[script.index("const pokemon=["):script.index("];",script.index("const pokemon=["))+2]
+rows=pat.findall(array)
+assert len(rows)==400, f"Expected 400 executable Pokemon records, got {len(rows)}"
+assert s.rstrip().endswith("</html>"), "Trailing content found after </html>"
 nums=[int(r[0]) for r in rows]; names=[r[2] for r in rows]; dex=[int(r[1]) for r in rows]
 assert sorted(nums)==list(range(1,401)), "Paldea Dex must be exactly #001-#400"
 assert len(set(names))==400, "Duplicate Pokemon names"
