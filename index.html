@@ -20,11 +20,17 @@ details{border-top:1px solid #242a34;padding:11px 0}summary{cursor:pointer;font-
 .actions{display:flex;gap:8px}.caught{flex:1;cursor:pointer}.caught.on{background:#12321c;border-color:#246c38;color:#8cf0aa}.empty{text-align:center;color:#9ca3af;padding:60px 10px}
 .note{font-size:12px;color:#7f8795;margin:16px 2px 40px}@media(max-width:480px){.wrap{padding:13px}.grid{grid-template-columns:1fr}.visual{height:170px}.visual img{height:155px}}
 
-.needbox{margin:12px 0;padding:12px;border:1px solid #334155;border-radius:14px;background:#0b1220}.needtitle{font-weight:800;margin-bottom:8px}.needgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.needcell{padding:9px;border-radius:10px;background:#111827}.needcell b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#94a3b8;margin-bottom:3px}.warn{grid-column:1/-1;border-left:3px solid #f59e0b}@media(max-width:560px){.needgrid{grid-template-columns:1fr}.warn{grid-column:auto}}</style></head>
+.needbox{margin:12px 0;padding:12px;border:1px solid #334155;border-radius:14px;background:#0b1220}.needtitle{font-weight:800;margin-bottom:8px}.needgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.needcell{padding:9px;border-radius:10px;background:#111827}.needcell b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#94a3b8;margin-bottom:3px}.warn{grid-column:1/-1;border-left:3px solid #f59e0b}@media(max-width:560px){.needgrid{grid-template-columns:1fr}.warn{grid-column:auto}}
+.progressbox{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}
+.progresspill{padding:8px 11px;border-radius:999px;background:#111827;border:1px solid #334155;font-size:13px;font-weight:700}
+.priority{margin:0 0 14px;padding:12px;border-radius:14px;background:#111827;border:1px solid #334155}
+.priority b{display:block;margin-bottom:4px}
+.prio-high{border-left:4px solid #22c55e}.prio-med{border-left:4px solid #f59e0b}.prio-low{border-left:4px solid #64748b}
+</style></head>
 <body><main class="wrap">
 <section class="hero"><span class="eyebrow">🔴 PALDEA • SCARLET</span><h1>Pokémon Locator</h1><p>Encontre, capture e complete sua Pokédex sem ficar rodando Paldea à toa.</p>
 <div class="stats"><div class="stat"><b id="total">0</b><span>NO GUIA</span></div><div class="stat"><b id="caughtN">0</b><span>CAPTURADOS</span></div><div class="stat"><b id="missingN">0</b><span>FALTAM</span></div></div></section>
-<div class="toolbar"><input id="q" autocomplete="off" placeholder="🔎 Procurar Pokémon..."><select id="filter"><option value="missing">Só faltam</option><option value="all">Todos</option><option value="scarlet">Scarlet exclusivos</option><option value="violet">Violet exclusivos</option></select></div>
+<div class="toolbar"><input id="q" autocomplete="off" placeholder="🔎 Procurar Pokémon..."><select id="filter"><option value="missing">Só faltam</option><option value="all">Todos</option><option value="recommended">⭐ Próximo recomendado</option><option value="scarlet">Scarlet exclusivos</option><option value="violet">Violet exclusivos</option></select></div>
 <section id="grid" class="grid"></section><p class="note">O guia prioriza o caminho mais prático. Encounter Power é uma ajuda opcional e dura 30 minutos.</p>
 </main>
 <script>
@@ -39,6 +45,33 @@ const pokemon=[
 ]
 const saved=new Set(JSON.parse(localStorage.getItem("caught")||"[]"));
 const $=s=>document.querySelector(s);
+
+
+function familyValue(p){
+ const lines=[
+  ["Larvitar","Pupitar","Tyranitar"],["Deino","Zweilous","Hydreigon"],["Bagon","Shelgon","Salamence"],
+  ["Dreepy","Drakloak","Dragapult"],["Gulpin","Swalot"],["Clauncher","Clawitzer"],["Skrelp","Dragalge"],
+  ["Drifloon","Drifblim"],["Stunky","Skuntank"],["Misdreavus","Mismagius"]
+ ];
+ const line=lines.find(x=>x.includes(p.name));
+ if(!line) return 1;
+ const first=line[0]===p.name;
+ return first?line.length:1;
+}
+function priorityScore(p){
+ if(saved.has(p.name)) return -999;
+ let s=familyValue(p)*10;
+ if(p.version==="violet") s+=6;
+ if(/troca|Union Circle|999|1\.000|1000|amizade|Stone|Armor|Crest/i.test((p.method||"")+" "+(p.route||""))) s+=4;
+ return s;
+}
+function priorityInfo(p){
+ const v=familyValue(p), s=priorityScore(p);
+ if(v>=3) return {cls:"prio-high",label:"⭐ Alta prioridade",why:`Pode render até ${v} registros da Pokédex pela mesma linha evolutiva.`};
+ if(p.version==="violet") return {cls:"prio-high",label:"⭐ Alta prioridade",why:"Exclusivo de Violet: resolva por troca, cooperação ou método indicado."};
+ if(s>=14) return {cls:"prio-med",label:"Prioridade média",why:"Possui condição especial; vale resolver quando você tiver o item/requisito."};
+ return {cls:"prio-low",label:"Prioridade normal",why:"Pode ser concluído normalmente durante a exploração."};
+}
 
 function evoInfo(p){
  const m=p.method||""; let item="—",where="—",condition=m;
@@ -62,9 +95,9 @@ function evoInfo(p){
 }
 function artwork(id){return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/"+id+".png"}
 function stats(){total.textContent=pokemon.length;caughtN.textContent=pokemon.filter(p=>saved.has(p.n)).length;missingN.textContent=pokemon.filter(p=>!saved.has(p.n)).length}
-function draw(){const term=q.value.trim().toLowerCase(),f=filter.value;let a=pokemon.filter(p=>p.name.toLowerCase().includes(term)||String(p.n).includes(term));if(f==="missing")a=a.filter(p=>!saved.has(p.n));if(f==="scarlet")a=a.filter(p=>p.version==="scarlet");if(f==="violet")a=a.filter(p=>p.version==="violet");
+function draw(){const term=q.value.trim().toLowerCase(),f=filter.value;let a=pokemon.filter(p=>p.name.toLowerCase().includes(term)||String(p.n).includes(term));if(f==="missing")a=a.filter(p=>!saved.has(p.n));if(f==="scarlet")a=a.filter(p=>p.version==="scarlet");if(f==="violet")a=a.filter(p=>p.version==="violet");if(f==="recommended")a=a.filter(p=>!saved.has(p.name)).sort((x,y)=>priorityScore(y)-priorityScore(x)).slice(0,12);
 grid.innerHTML=a.map(p=>`<article class="card"><div class="visual"><img loading="lazy" src="${artwork(p.dex)}" alt="${p.name}"></div><div class="body"><div class="top"><div><div class="num">Paldea #${p.n}</div><h2>${p.name}</h2></div><span class="tag">${p.version==="violet"?"🟣 Violet":p.version==="both"?"🔵 Ambas":"🔴 Scarlet"}</span></div><div class="types">${p.types.map(t=>`<span class="type">${t}</span>`).join("")}</div>
-<div class="row"><div class="label">📍 Melhor local</div><div class="value">${p.place}</div></div><div class="row"><div class="label">🧭 Partida</div><div class="value">${p.fast}</div></div><div class="row"><div class="label">➡️ Caminho</div><div class="value">${(()=>{const e=evoInfo(p);return `<div class="needbox"><div class="needtitle">🧭 Guia rápido</div><div class="needgrid"><div class="needcell"><b>📦 Item necessário</b>${e.item}</div><div class="needcell"><b>📍 Onde conseguir</b>${e.where}</div><div class="needcell"><b>⚙️ Como evoluir</b>${e.condition}</div>${e.warning?`<div class="needcell warn"><b>⚠️ Condição especial</b>${e.warning}</div>`:""}</div></div>`})()}${p.route}</div></div>
+<div class="row"><div class="label">📍 Melhor local</div><div class="value">${p.place}</div></div><div class="row"><div class="label">🧭 Partida</div><div class="value">${p.fast}</div></div><div class="row"><div class="label">➡️ Caminho</div><div class="value">${(()=>{const z=priorityInfo(p);return `<div class="priority ${z.cls}"><b>${z.label}</b>${z.why}</div>`})()}${(()=>{const e=evoInfo(p);return `<div class="needbox"><div class="needtitle">🧭 Guia rápido</div><div class="needgrid"><div class="needcell"><b>📦 Item necessário</b>${e.item}</div><div class="needcell"><b>📍 Onde conseguir</b>${e.where}</div><div class="needcell"><b>⚙️ Como evoluir</b>${e.condition}</div>${e.warning?`<div class="needcell warn"><b>⚠️ Condição especial</b>${e.warning}</div>`:""}</div></div>`})()}${p.route}</div></div>
 <div class="row"><div class="label">🎯 Método</div><div class="value">${p.method}</div></div><div class="row"><div class="label">🕐 Horário</div><div class="value">${p.time}</div></div>
 <details><summary>🥪 Sanduíche / Encounter Power</summary><div class="recipe"><b>Tipo recomendado:</b> ${p.encounter}<br>${p.recipe}<br><span class="muted">Meal Powers permanecem ativos por 30 min.</span></div></details>
 <details><summary>💡 Dica de captura</summary><div class="recipe">${p.tip}</div></details>
