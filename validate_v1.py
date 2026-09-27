@@ -102,4 +102,12 @@ exclusive_route_gaps = [
 ]
 assert not exclusive_route_gaps, f"Version-exclusive entries missing opposite-version guidance: {exclusive_route_gaps}"
 
+# Special-evolution regression checks: required day/night metadata and Kingambit crest semantics.
+special_times={"Gumshoos":"Dia","Chansey":"Dia","Lucario":"Dia","Lurantis":"Dia","Houndstone":"Noite"}
+row_by_name={r[2]:r for r in rows}
+for name,expected_time in special_times.items():
+    assert row_by_name[name][8]==expected_time, f"{name}: expected time {expected_time}, got {row_by_name[name][8]}"
+assert "O seu Bisharp não precisa segurar Leader's Crest" in html
+assert "esses Bisharp adversários devem estar segurando Leader's Crest" in html
+
 print("Release V1.1 audit OK: critical evolutions/trades, 18 prices, branding and refined early routes present.")
