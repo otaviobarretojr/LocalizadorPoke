@@ -96,9 +96,9 @@ for name in ["Oinkologne","Spidops","Lokix","Skiploom","Spewpa"]:
     assert f'name:"{name}"' in html
 # Every version-exclusive entry must explain how the opposite-version player proceeds.
 exclusive_route_gaps = [
-    p["name"] for p in pokemon
-    if p["version"] in {"scarlet", "violet"}
-    and not re.search(r"(troca|coop|Scarlet|Violet)", p["route"], re.I)
+    r[2] for r in rows
+    if r[4] in {"scarlet", "violet"}
+    and not re.search(r"(troca|coop|Scarlet|Violet)", r[7], re.I)
 ]
 assert not exclusive_route_gaps, f"Version-exclusive entries missing opposite-version guidance: {exclusive_route_gaps}"
 
