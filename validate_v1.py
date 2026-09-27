@@ -110,4 +110,13 @@ for name,expected_time in special_times.items():
 assert "O seu Bisharp não precisa segurar Leader's Crest" in html
 assert "esses Bisharp adversários devem estar segurando Leader's Crest" in html
 
+# Walking/move evolution guidance must not regress.
+for name in ["Pawmot","Brambleghast","Rabsca"]:
+    rec=row_by_name[name]
+    assert "1.000 passos" in rec[7] or "1.000 passos" in rec[9], f"{name}: missing 1,000-step requirement"
+    assert "Auto Battle não aciona a evolução" in rec[7], f"{name}: missing normal-level-up warning"
+for name,move in {"Annihilape":"Rage Fist","Dudunsparce":"Hyper Drill","Farigiraf":"Twin Beam"}.items():
+    rec=row_by_name[name]
+    assert move in rec[7] and "sub" in rec[7].lower(), f"{name}: move + level-up evolution guidance missing"
+
 print("Release V1.1 audit OK: critical evolutions/trades, 18 prices, branding and refined early routes present.")
