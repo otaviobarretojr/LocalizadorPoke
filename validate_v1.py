@@ -94,4 +94,12 @@ for typ,price in encounter_prices.items():
 assert "PALDEA • SCARLET & VIOLET • V1.1" in html
 for name in ["Oinkologne","Spidops","Lokix","Skiploom","Spewpa"]:
     assert f'name:"{name}"' in html
+# Every version-exclusive entry must explain how the opposite-version player proceeds.
+exclusive_route_gaps = [
+    p["name"] for p in pokemon
+    if p["version"] in {"scarlet", "violet"}
+    and not re.search(r"(troca|coop|Scarlet|Violet)", p["route"], re.I)
+]
+assert not exclusive_route_gaps, f"Version-exclusive entries missing opposite-version guidance: {exclusive_route_gaps}"
+
 print("Release V1.1 audit OK: critical evolutions/trades, 18 prices, branding and refined early routes present.")
